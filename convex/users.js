@@ -86,13 +86,12 @@ export const completeOnboarding = mutation({
   handler: async (ctx, args) => {
     const user = await ctx.runQuery(internal.users.getCurrentUser);
 
-    await ctx.db.patch(user._id, {
-      location: args.location,
-      interests: args.interests,
-      hasCompletedOnBoarding: true,
-      updatedAt: Date.now(),
-    });
+    if (!user) {
+      return [];
+    }
 
-    return user._id;
+    const registrations = await ctx.db
+      .query("registrations")
+      .withIndex("by_user", (q) => q.eq("userId", user._id));
   },
 });
